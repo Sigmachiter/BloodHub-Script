@@ -1,9 +1,5 @@
--- BloodHub AC Test v1.4
--- Автор: @ws3eqr
--- Функции: Fly, Noclip, Speed Control, Close Button
-
 local function LoadBloodHub()
-    -- Удаление старых версий
+    -- Удаляем старые версии
     if game:GetService("CoreGui"):FindFirstChild("BloodHub") then
         game:GetService("CoreGui").BloodHub:Destroy()
     end
@@ -13,130 +9,120 @@ local function LoadBloodHub()
     local UIS = game:GetService("UserInputService")
     local RunService = game:GetService("RunService")
 
-    -- Настройки
+    -- Состояния
     local flyActive = false
     local noclipActive = false
     local flySpeed = 50
     local flyVertical = 0
+    local lastCharacter
 
-    -- Создание интерфейса
+    -- Создаем интерфейс
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "BloodHub"
     ScreenGui.Parent = game:GetService("CoreGui")
+    ScreenGui.Enabled = true
 
     -- Главный фрейм
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0.18, 0, 0.32, 0)
-    MainFrame.Position = UDim2.new(0.8, 0, 0.35, 0)
+    MainFrame.Size = UDim2.new(0.18, 0, 0.3, 0)
+    MainFrame.Position = UDim2.new(0.82, 0, 0.35, 0)
     MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
     MainFrame.BorderSizePixel = 0
-    MainFrame.Parent = ScreenGui
 
-    -- Закругленные углы
     local UICorner = Instance.new("UICorner")
     UICorner.CornerRadius = UDim.new(0, 8)
     UICorner.Parent = MainFrame
-
-    -- Кнопка закрытия (крестик)
-    local CloseButton = Instance.new("TextButton")
-    CloseButton.Text = "×"
-    CloseButton.TextSize = 20
-    CloseButton.Size = UDim2.new(0, 28, 0, 28)
-    CloseButton.Position = UDim2.new(1, -30, 0, -12)
-    CloseButton.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
-    CloseButton.TextColor3 = Color3.new(1, 1, 1)
-    CloseButton.Font = Enum.Font.GothamBold
-    CloseButton.ZIndex = 2
-    CloseButton.Parent = MainFrame
-
-    -- Стиль крестика (круглый)
-    local CloseCorner = Instance.new("UICorner")
-    CloseCorner.CornerRadius = UDim.new(1, 0)
-    CloseCorner.Parent = CloseButton
-
-    -- Анимация кнопки
-    CloseButton.MouseEnter:Connect(function()
-        CloseButton.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
-    end)
-    CloseButton.MouseLeave:Connect(function()
-        CloseButton.BackgroundColor3 = Color3.fromRGB(180, 50, 50)
-    end)
-
-    -- Функция закрытия
-    CloseButton.MouseButton1Click:Connect(function()
-        ScreenGui:Destroy()
-    end)
+    MainFrame.Parent = ScreenGui
 
     -- Заголовок
+    local TitleFrame = Instance.new("Frame")
+    TitleFrame.Size = UDim2.new(1, 0, 0.12, 0)
+    TitleFrame.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+    
+    local TitleCorner = Instance.new("UICorner")
+    TitleCorner.CornerRadius = UDim.new(0, 8)
+    TitleCorner.Parent = TitleFrame
+    TitleFrame.Parent = MainFrame
+
     local Title = Instance.new("TextLabel")
     Title.Text = "BLOODHUB"
-    Title.Size = UDim2.new(1, 0, 0.1, 0)
-    Title.Position = UDim2.new(0, 0, 0.02, 0)
-    Title.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+    Title.Size = UDim2.new(1, 0, 0.7, 0)
+    Title.Position = UDim2.new(0, 0, 0.15, 0)
+    Title.BackgroundTransparency = 1
     Title.TextColor3 = Color3.new(1, 1, 1)
     Title.Font = Enum.Font.GothamBlack
     Title.TextSize = 14
-    Title.Parent = MainFrame
+    Title.Parent = TitleFrame
 
-    -- Версия и автор
     local Version = Instance.new("TextLabel")
-    Version.Text = "v1.4 | @ws3eqr"
-    Version.Size = UDim2.new(1, 0, 0.08, 0)
-    Version.Position = UDim2.new(0, 0, 0.1, 0)
+    Version.Text = "v1.2 | @ws3eqr"
+    Version.Size = UDim2.new(1, 0, 0.3, 0)
+    Version.Position = UDim2.new(0, 0, 0.7, 0)
     Version.BackgroundTransparency = 1
-    Version.TextColor3 = Color3.new(0.8, 0.8, 0.8)
+    Version.TextColor3 = Color3.new(0.9, 0.9, 0.9)
     Version.Font = Enum.Font.Gotham
-    Version.TextSize = 11
-    Version.Parent = MainFrame
+    Version.TextSize = 10
+    Version.Parent = TitleFrame
 
     -- Вкладки
     local TabsFrame = Instance.new("Frame")
-    TabsFrame.Size = UDim2.new(1, 0, 0.08, 0)
-    TabsFrame.Position = UDim2.new(0, 0, 0.18, 0)
+    TabsFrame.Size = UDim2.new(1, 0, 0.1, 0)
+    TabsFrame.Position = UDim2.new(0, 0, 0.12, 0)
     TabsFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    TabsFrame.BorderSizePixel = 0
     TabsFrame.Parent = MainFrame
 
-    local UpdatesTab = Instance.new("TextButton")
-    UpdatesTab.Text = "UPDATES"
-    UpdatesTab.Size = UDim2.new(0.5, 0, 1, 0)
-    UpdatesTab.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    UpdatesTab.TextColor3 = Color3.new(1, 1, 1)
-    UpdatesTab.Font = Enum.Font.GothamBold
-    UpdatesTab.TextSize = 12
-    UpdatesTab.Parent = TabsFrame
+    local function CreateTab(text, pos)
+        local tab = Instance.new("TextButton")
+        tab.Text = text
+        tab.Size = UDim2.new(0.5, 0, 1, 0)
+        tab.Position = pos
+        tab.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        tab.TextColor3 = Color3.new(1, 1, 1)
+        tab.Font = Enum.Font.GothamBold
+        tab.TextSize = 12
+        tab.AutoButtonColor = false
+        
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 6)
+        corner.Parent = tab
+        tab.Parent = TabsFrame
+        return tab
+    end
 
-    local MiscTab = Instance.new("TextButton")
-    MiscTab.Text = "MISC"
-    MiscTab.Size = UDim2.new(0.5, 0, 1, 0)
-    MiscTab.Position = UDim2.new(0.5, 0, 0, 0)
-    MiscTab.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    MiscTab.TextColor3 = Color3.new(1, 1, 1)
-    MiscTab.Font = Enum.Font.GothamBold
-    MiscTab.TextSize = 12
-    MiscTab.Parent = TabsFrame
+    local UpdatesTab = CreateTab("UPDATES", UDim2.new(0, 0, 0, 0))
+    local MiscTab = CreateTab("MISC", UDim2.new(0.5, 0, 0, 0))
 
     -- Контейнеры
     local UpdatesContainer = Instance.new("ScrollingFrame")
-    UpdatesContainer.Size = UDim2.new(1, 0, 0.7, 0)
-    UpdatesContainer.Position = UDim2.new(0, 0, 0.26, 0)
-    UpdatesContainer.BackgroundTransparency = 1
-    UpdatesContainer.ScrollBarThickness = 3
+    UpdatesContainer.Size = UDim2.new(0.95, 0, 0.75, 0)
+    UpdatesContainer.Position = UDim2.new(0.025, 0, 0.23, 0)
+    UpdatesContainer.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    UpdatesContainer.ScrollBarThickness = 5
     UpdatesContainer.Visible = true
+    
+    local UICorner2 = Instance.new("UICorner")
+    UICorner2.CornerRadius = UDim.new(0, 8)
+    UICorner2.Parent = UpdatesContainer
     UpdatesContainer.Parent = MainFrame
 
     local MiscContainer = Instance.new("ScrollingFrame")
-    MiscContainer.Size = UDim2.new(1, 0, 0.7, 0)
-    MiscContainer.Position = UDim2.new(0, 0, 0.26, 0)
-    MiscContainer.BackgroundTransparency = 1
-    MiscContainer.ScrollBarThickness = 3
+    MiscContainer.Size = UDim2.new(0.95, 0, 0.75, 0)
+    MiscContainer.Position = UDim2.new(0.025, 0, 0.23, 0)
+    MiscContainer.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    MiscContainer.ScrollBarThickness = 5
     MiscContainer.Visible = false
+    
+    local UICorner3 = Instance.new("UICorner")
+    UICorner3.CornerRadius = UDim.new(0, 8)
+    UICorner3.Parent = MiscContainer
     MiscContainer.Parent = MainFrame
 
     -- Функция создания кнопок
     local function CreateButton(parent, text)
         local button = Instance.new("TextButton")
         button.Text = text
-        button.Size = UDim2.new(0.9, 0, 0, 32)
+        button.Size = UDim2.new(0.9, 0, 0, 30)
         button.Position = UDim2.new(0.05, 0, 0, 0)
         button.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
         button.TextColor3 = Color3.new(1, 1, 1)
@@ -162,10 +148,10 @@ local function LoadBloodHub()
 
     -- Раздел UPDATES
     local PatchNotes = {
-        "Fixed fly movement",
-        "Improved noclip",
-        "Added close button",
-        "Optimized performance"
+        "Fixed noclip toggle",
+        "Improved fly controls",
+        "New UI design",
+        "Added speed control"
     }
 
     local Layout = Instance.new("UIListLayout")
@@ -174,15 +160,14 @@ local function LoadBloodHub()
 
     for i, note in ipairs(PatchNotes) do
         local noteFrame = Instance.new("Frame")
-        noteFrame.Size = UDim2.new(0.9, 0, 0, 24)
-        noteFrame.Position = UDim2.new(0.05, 0, 0, (i-1)*32)
+        noteFrame.Size = UDim2.new(0.9, 0, 0, 22)
+        noteFrame.Position = UDim2.new(0.05, 0, 0, (i-1)*30)
         noteFrame.BackgroundTransparency = 1
         noteFrame.Parent = UpdatesContainer
         
         local bullet = Instance.new("TextLabel")
         bullet.Text = "•"
         bullet.Size = UDim2.new(0.1, 0, 1, 0)
-        bullet.Position = UDim2.new(0, 0, 0, 0)
         bullet.BackgroundTransparency = 1
         bullet.TextColor3 = Color3.fromRGB(200, 40, 40)
         bullet.Font = Enum.Font.GothamBold
@@ -207,29 +192,38 @@ local function LoadBloodHub()
 
     -- Настройки скорости
     local SpeedFrame = Instance.new("Frame")
-    SpeedFrame.Size = UDim2.new(0.9, 0, 0, 80)
-    SpeedFrame.Position = UDim2.new(0.05, 0, 0.2, 0)
+    SpeedFrame.Size = UDim2.new(0.9, 0, 0, 70)
+    SpeedFrame.Position = UDim2.new(0.05, 0, 0.15, 0)
     SpeedFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    SpeedFrame.BorderSizePixel = 0
     SpeedFrame.Visible = false
+    
+    local UICorner4 = Instance.new("UICorner")
+    UICorner4.CornerRadius = UDim.new(0, 6)
+    UICorner4.Parent = SpeedFrame
     SpeedFrame.Parent = MiscContainer
-
-    local UICornerSpeed = Instance.new("UICorner")
-    UICornerSpeed.CornerRadius = UDim.new(0, 6)
-    UICornerSpeed.Parent = SpeedFrame
 
     local SpeedLabel = Instance.new("TextLabel")
     SpeedLabel.Text = "SPEED: " .. flySpeed
     SpeedLabel.Size = UDim2.new(1, 0, 0.3, 0)
-    SpeedLabel.Position = UDim2.new(0, 0, 0.1, 0)
     SpeedLabel.BackgroundTransparency = 1
     SpeedLabel.TextColor3 = Color3.new(1, 1, 1)
     SpeedLabel.Font = Enum.Font.GothamBold
     SpeedLabel.TextSize = 12
     SpeedLabel.Parent = SpeedFrame
 
-    -- Функции управления
-    local function Fly()
+    -- Функция Noclip (исправленная)
+    local function UpdateNoclip()
+        if not Player.Character then return end
+        
+        for _, part in ipairs(Player.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = not noclipActive
+            end
+        end
+    end
+
+    -- Функция Fly (исправленная)
+    local function UpdateFly()
         if not flyActive or not Player.Character then return end
         
         local Humanoid = Player.Character:FindFirstChild("Humanoid")
@@ -247,24 +241,15 @@ local function LoadBloodHub()
         if UIS:IsKeyDown(Enum.KeyCode.A) then moveDir += Vector3.new(cam.Z, 0, -cam.X) end
         
         if UIS:IsKeyDown(Enum.KeyCode.Space) then
-            flyVertical = math.min(flyVertical + 0.2, 1)
+            flyVertical = math.min(flyVertical + 0.15, 1)
         elseif UIS:IsKeyDown(Enum.KeyCode.LeftShift) then
-            flyVertical = math.max(flyVertical - 0.2, -1)
+            flyVertical = math.max(flyVertical - 0.15, -1)
         else
-            flyVertical = flyVertical * 0.8
+            flyVertical = flyVertical * 0.85
         end
         
         if moveDir.Magnitude > 0 then moveDir = moveDir.Unit * flySpeed end
         RootPart.Velocity = moveDir + Vector3.new(0, flyVertical * flySpeed, 0)
-    end
-
-    local function Noclip()
-        if not Player.Character then return end
-        for _, part in ipairs(Player.Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = not noclipActive
-            end
-        end
     end
 
     -- Обработчики кнопок
@@ -272,54 +257,59 @@ local function LoadBloodHub()
         flyActive = not flyActive
         FlyBtn.Text = flyActive and "FLY [ON]" or "FLY [OFF]"
         SpeedFrame.Visible = flyActive
+        
+        if Player.Character and Player.Character:FindFirstChild("Humanoid") then
+            Player.Character.Humanoid.PlatformStand = flyActive
+        end
     end)
 
     NoclipBtn.MouseButton1Click:Connect(function()
         noclipActive = not noclipActive
         NoclipBtn.Text = noclipActive and "NOCLIP [ON]" or "NOCLIP [OFF]"
+        UpdateNoclip() -- Мгновенное применение
     end)
 
-    -- Настройки скорости
-    local SpeedUp = CreateButton(SpeedFrame, "▲ INCREASE")
-    SpeedUp.Position = UDim2.new(0, 0, 0.4, 0)
-    SpeedUp.MouseButton1Click:Connect(function()
-        flySpeed = math.clamp(flySpeed + 5, 10, 150)
-        SpeedLabel.Text = "SPEED: " .. flySpeed
+    -- Автоматическое обновление при смене персонажа
+    Player.CharacterAdded:Connect(function()
+        if flyActive and Player.Character:FindFirstChild("Humanoid") then
+            Player.Character.Humanoid.PlatformStand = true
+        end
+        UpdateNoclip()
     end)
 
-    local SpeedDown = CreateButton(SpeedFrame, "▼ DECREASE")
-    SpeedDown.Position = UDim2.new(0, 0, 0.7, 0)
-    SpeedDown.MouseButton1Click:Connect(function()
-        flySpeed = math.clamp(flySpeed - 5, 10, 150)
-        SpeedLabel.Text = "SPEED: " .. flySpeed
+    -- Основной цикл
+    RunService.Heartbeat:Connect(function()
+        UpdateFly()
+        UpdateNoclip()
     end)
 
     -- Переключение вкладок
     UpdatesTab.MouseButton1Click:Connect(function()
         UpdatesContainer.Visible = true
         MiscContainer.Visible = false
-        UpdatesTab.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-        MiscTab.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+        UpdatesTab.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+        MiscTab.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     end)
 
     MiscTab.MouseButton1Click:Connect(function()
         UpdatesContainer.Visible = false
         MiscContainer.Visible = true
-        MiscTab.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-        UpdatesTab.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+        MiscTab.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+        UpdatesTab.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     end)
 
-    -- Основной цикл
-    RunService.Heartbeat:Connect(function()
-        if flyActive then Fly() end
-        if noclipActive then Noclip() end
+    -- Закрытие/открытие меню
+    UIS.InputBegan:Connect(function(input)
+        if input.KeyCode == Enum.KeyCode.RightControl then
+            ScreenGui.Enabled = not ScreenGui.Enabled
+        end
     end)
 
-    -- Активация интерфейса
-    ScreenGui.Enabled = true
+    -- Инициализация
+    UpdatesTab.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
 end
 
--- Защищенный запуск
+-- Загрузка с защитой
 local success, err = pcall(LoadBloodHub)
 if not success then
     warn("BloodHub Error:", err)
