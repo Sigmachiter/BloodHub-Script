@@ -12,8 +12,10 @@ local function LoadBloodHub()
     -- Состояния
     local flyActive = false
     local noclipActive = false
-    local flySpeed = 50
-    local flyVertical = 0
+    local speedActive = false
+    local spinActive = false
+    local flySpeed = 50  -- Начальная скорость (макс 100)
+    local spinSpeed = 1  -- Скорость вращения
 
     -- Создание интерфейса
     local ScreenGui = Instance.new("ScreenGui")
@@ -115,6 +117,7 @@ local function LoadBloodHub()
         "Fly system added",
         "Noclip physics fixed",
         "Speed control slider",
+        "Spin rotation control",
         "Anti-cheat test module"
     }
 
@@ -181,34 +184,50 @@ local function LoadBloodHub()
     -- Кнопки функций
     local FlyBtn = CreateButton(MiscContainer, "Fly [ ]", 0.05)
     local NoclipBtn = CreateButton(MiscContainer, "Noclip [ ]", 0.15)
+    local SpeedBtn = CreateButton(MiscContainer, "Speed Control [ ]", 0.25)
+    local SpinBtn = CreateButton(MiscContainer, "Spin Control [ ]", 0.35)
 
-    -- Крутилка скорости
+    -- Фрейм настроек скорости
     local SpeedFrame = Instance.new("Frame")
-    SpeedFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    SpeedFrame.Position = UDim2.new(0.05, 0, 0.3, 0)
-    SpeedFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    SpeedFrame.Size = UDim2.new(0.9, 0, 0, 100)
+    SpeedFrame.Position = UDim2.new(0.05, 0, 0.45, 0)
+    SpeedFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    SpeedFrame.Visible = false
     SpeedFrame.Parent = MiscContainer
 
     local SpeedLabel = Instance.new("TextLabel")
     SpeedLabel.Text = "Speed: " .. flySpeed
-    SpeedLabel.Size = UDim2.new(1, 0, 0.4, 0)
+    SpeedLabel.Size = UDim2.new(1, 0, 0.3, 0)
     SpeedLabel.BackgroundTransparency = 1
     SpeedLabel.TextColor3 = Color3.new(1, 1, 1)
     SpeedLabel.Font = Enum.Font.GothamBold
     SpeedLabel.TextSize = 12
     SpeedLabel.Parent = SpeedFrame
 
-    local SpeedSlider = Instance.new("TextButton")
-    SpeedSlider.Text = "▲▼"
-    SpeedSlider.Size = UDim2.new(0.8, 0, 0.5, 0)
-    SpeedSlider.Position = UDim2.new(0.1, 0, 0.5, 0)
-    SpeedSlider.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    SpeedSlider.TextColor3 = Color3.new(1, 1, 1)
-    SpeedSlider.Font = Enum.Font.GothamBold
-    SpeedSlider.TextSize = 14
-    SpeedSlider.Parent = SpeedFrame
+    local SpeedUp = CreateButton(SpeedFrame, "▲ Increase", 0.3)
+    local SpeedDown = CreateButton(SpeedFrame, "▼ Decrease", 0.6)
 
-    -- Функция Fly (пробел - вверх, шифт - вниз)
+    -- Фрейм настроек вращения
+    local SpinFrame = Instance.new("Frame")
+    SpinFrame.Size = UDim2.new(0.9, 0, 0, 100)
+    SpinFrame.Position = UDim2.new(0.05, 0, 0.6, 0)
+    SpinFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    SpinFrame.Visible = false
+    SpinFrame.Parent = MiscContainer
+
+    local SpinLabel = Instance.new("TextLabel")
+    SpinLabel.Text = "Spin: " .. spinSpeed
+    SpinLabel.Size = UDim2.new(1, 0, 0.3, 0)
+    SpinLabel.BackgroundTransparency = 1
+    SpinLabel.TextColor3 = Color3.new(1, 1, 1)
+    SpinLabel.Font = Enum.Font.GothamBold
+    SpinLabel.TextSize = 12
+    SpinLabel.Parent = SpinFrame
+
+    local SpinUp = CreateButton(SpinFrame, "▲ Faster", 0.3)
+    local SpinDown = CreateButton(SpinFrame, "▼ Slower", 0.6)
+
+    -- Функция Fly
     local function Fly()
         if not flyActive or not Player.Character then return end
         
@@ -227,24 +246,33 @@ local function LoadBloodHub()
         if UIS:IsKeyDown(Enum.KeyCode.D) then moveDir += Vector3.new(-cam.Z, 0, cam.X) end
         if UIS:IsKeyDown(Enum.KeyCode.A) then moveDir += Vector3.new(cam.Z, 0, -cam.X) end
         
-        -- Вертикальное управление (пробел/шифт)
+        -- Вертикальное управление
         if UIS:IsKeyDown(Enum.KeyCode.Space) then
-            flyVertical = math.min(flyVertical + 0.2, 1)
+            moveDir += Vector3.new(0, 1, 0)
         elseif UIS:IsKeyDown(Enum.KeyCode.LeftShift) then
-            flyVertical = math.max(flyVertical - 0.2, -1)
-        else
-            flyVertical = flyVertical * 0.8
+            moveDir += Vector3.new(0, -1, 0)
         end
         
-        -- Применение скорости
-        if moveDir.Magnitude > 0 then moveDir = moveDir.Unit * flySpeed end
-        RootPart.Velocity = moveDir + Vector3.new(0, flyVertical * flySpeed, 0)
+        -- Применение скорости (макс 100)
+        if moveDir.Magnitude > 0 then
+            moveDir = moveDir.Unit * math.min(flySpeed, 100)
+        end
+        RootPart.Velocity = moveDir
     end
 
-    -- Функция Noclip (рабочая)
+    -- Функция вращения
+    local function Spin()
+        if not spinActive or not Player.Character then return end
+        
+        local RootPart = Player.Character:FindFirstChild("HumanoidRootPart")
+        if not RootPart then return end
+        
+        RootPart.CFrame = RootPart.CFrame * CFrame.Angles(0, math.rad(spinSpeed), 0)
+    end
+
+    -- Функция Noclip
     local function Noclip()
         if not Player.Character then return end
-        
         for _, part in ipairs(Player.Character:GetDescendants()) do
             if part:IsA("BasePart") then
                 part.CanCollide = not noclipActive
@@ -263,26 +291,44 @@ local function LoadBloodHub()
         NoclipBtn.Text = noclipActive and "Noclip [✓]" or "Noclip [ ]"
     end)
 
-    -- Крутилка скорости
-    SpeedSlider.MouseButton1Down:Connect(function()
-        while UIS:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
-            flySpeed = math.clamp(flySpeed + 2, 10, 150)
-            SpeedLabel.Text = "Speed: " .. math.floor(flySpeed)
-            wait(0.05)
-        end
+    SpeedBtn.MouseButton1Click:Connect(function()
+        speedActive = not speedActive
+        SpeedBtn.Text = speedActive and "Speed Control [✓]" or "Speed Control [ ]"
+        SpeedFrame.Visible = speedActive
     end)
 
-    SpeedSlider.MouseButton2Down:Connect(function()
-        while UIS:IsMouseButtonPressed(Enum.UserInputType.MouseButton2) do
-            flySpeed = math.clamp(flySpeed - 2, 10, 150)
-            SpeedLabel.Text = "Speed: " .. math.floor(flySpeed)
-            wait(0.05)
-        end
+    SpinBtn.MouseButton1Click:Connect(function()
+        spinActive = not spinActive
+        SpinBtn.Text = spinActive and "Spin Control [✓]" or "Spin Control [ ]"
+        SpinFrame.Visible = spinActive
+    end)
+
+    -- Управление скоростью
+    SpeedUp.MouseButton1Click:Connect(function()
+        flySpeed = math.min(flySpeed + 5, 100)
+        SpeedLabel.Text = "Speed: " .. flySpeed
+    end)
+
+    SpeedDown.MouseButton1Click:Connect(function()
+        flySpeed = math.max(flySpeed - 5, 10)
+        SpeedLabel.Text = "Speed: " .. flySpeed
+    end)
+
+    -- Управление вращением
+    SpinUp.MouseButton1Click:Connect(function()
+        spinSpeed = math.min(spinSpeed + 0.5, 10)
+        SpinLabel.Text = "Spin: " .. spinSpeed
+    end)
+
+    SpinDown.MouseButton1Click:Connect(function()
+        spinSpeed = math.max(spinSpeed - 0.5, 0.5)
+        SpinLabel.Text = "Spin: " .. spinSpeed
     end)
 
     -- Основной цикл
     RunService.Heartbeat:Connect(function()
         if flyActive then Fly() end
+        if spinActive then Spin() end
         Noclip()
     end)
 
@@ -312,5 +358,8 @@ local function LoadBloodHub()
     UpdatesTab.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
 end
 
--- Запуск
-LoadBloodHub()
+-- Запуск с обработкой ошибок
+local success, err = pcall(LoadBloodHub)
+if not success then
+    warn("BloodHub Error:", err)
+end
