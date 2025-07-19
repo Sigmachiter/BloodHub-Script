@@ -1,4 +1,4 @@
--- BloodHub Ultimate v3.0 (Verified Working)
+-- BloodHub Ultimate v4.0 (Verified Working)
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
@@ -7,26 +7,11 @@ local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
--- Безопасная инициализация GUI
-local function SafeGUI()
-    local gui = LocalPlayer:FindFirstChildOfClass("PlayerGui")
-    if not gui then
-        gui = Instance.new("PlayerGui")
-        gui.Parent = LocalPlayer
-    end
-    
-    local oldUI = gui:FindFirstChild("BloodHub_Ultimate")
-    if oldUI then oldUI:Destroy() end
-    
-    local GUI = Instance.new("ScreenGui")
-    GUI.Name = "BloodHub_Ultimate"
-    GUI.ResetOnSpawn = false
-    GUI.Parent = gui
-    
-    return GUI
-end
-
-local GUI = SafeGUI()
+-- Создание безопасного GUI
+local GUI = Instance.new("ScreenGui")
+GUI.Name = "BloodHub_Ultimate"
+GUI.ResetOnSpawn = false
+GUI.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 -- Основной контейнер
 local MainFrame = Instance.new("Frame")
@@ -38,7 +23,7 @@ MainFrame.Parent = GUI
 
 -- Заголовок
 local Title = Instance.new("TextLabel")
-Title.Text = "BLOODHUB ULTIMATE v3.0"
+Title.Text = "BLOODHUB ULTIMATE v4.0"
 Title.Size = UDim2.new(1, 0, 0, 40)
 Title.TextColor3 = Color3.fromRGB(255, 40, 40)
 Title.Font = Enum.Font.GothamBlack
@@ -46,7 +31,7 @@ Title.BackgroundTransparency = 1
 Title.Parent = MainFrame
 
 -- Вкладки
-local Tabs = {"Functions", "Visuals", "VisualSkins", "Misc", "Settings"}
+local Tabs = {"Functions", "Visuals", "Skins", "Misc", "Settings"}
 local TabFrames = {}
 local TabButtons = {}
 
@@ -82,162 +67,9 @@ for i, tabName in ipairs(Tabs) do
     end)
 end
 
--- ========== ВИЗУАЛЬНЫЕ СКИНЫ (10 лимитов) ==========
-local VisualSkinsFrame = TabFrames["VisualSkins"]
-local SkinPresets = {
-    ["Corblox"] = {
-        HeadColor = Color3.fromRGB(255, 0, 0),
-        TorsoColor = Color3.fromRGB(0, 0, 255),
-        LimbColor = Color3.fromRGB(0, 255, 0)
-    },
-    ["Ghost"] = {
-        HeadColor = Color3.fromRGB(200, 200, 200),
-        TorsoColor = Color3.fromRGB(150, 150, 150),
-        LimbColor = Color3.fromRGB(100, 100, 100)
-    },
-    ["Gold"] = {
-        HeadColor = Color3.fromRGB(212, 175, 55),
-        TorsoColor = Color3.fromRGB(214, 201, 30),
-        LimbColor = Color3.fromRGB(255, 216, 0)
-    },
-    ["Neon"] = {
-        HeadColor = Color3.fromRGB(255, 0, 255),
-        TorsoColor = Color3.fromRGB(0, 255, 255),
-        LimbColor = Color3.fromRGB(255, 255, 0)
-    },
-    ["Dark Knight"] = {
-        HeadColor = Color3.fromRGB(20, 20, 20),
-        TorsoColor = Color3.fromRGB(40, 40, 40),
-        LimbColor = Color3.fromRGB(25, 25, 25)
-    },
-    ["Fire"] = {
-        HeadColor = Color3.fromRGB(255, 50, 0),
-        TorsoColor = Color3.fromRGB(255, 100, 0),
-        LimbColor = Color3.fromRGB(255, 150, 0)
-    },
-    ["Ice"] = {
-        HeadColor = Color3.fromRGB(0, 200, 255),
-        TorsoColor = Color3.fromRGB(100, 220, 255),
-        LimbColor = Color3.fromRGB(200, 240, 255)
-    },
-    ["Rainbow"] = {
-        HeadColor = Color3.fromRGB(255, 0, 0),
-        TorsoColor = Color3.fromRGB(0, 255, 0),
-        LimbColor = Color3.fromRGB(0, 0, 255)
-    },
-    ["VIP"] = {
-        HeadColor = Color3.fromRGB(255, 215, 0),
-        TorsoColor = Color3.fromRGB(192, 192, 192),
-        LimbColor = Color3.fromRGB(205, 127, 50)
-    },
-    ["Noob"] = {
-        HeadColor = Color3.fromRGB(255, 255, 255),
-        TorsoColor = Color3.fromRGB(255, 255, 255),
-        LimbColor = Color3.fromRGB(255, 255, 255)
-    }
-}
+-- ========== ФУНКЦИИ ==========
+local FunctionsFrame = TabFrames["Functions"]
 
-local currentSkin = nil
-
-local function ApplySkin(skinName)
-    if not LocalPlayer.Character then return end
-    
-    currentSkin = skinName
-    local skinData = SkinPresets[skinName]
-    
-    for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
-        if part:IsA("BasePart") then
-            if part.Name == "Head" then
-                part.Color = skinData.HeadColor
-            elseif part.Name == "Torso" or part.Name == "UpperTorso" then
-                part.Color = skinData.TorsoColor
-            elseif part.Name:match("Arm") or part.Name:match("Leg") or part.Name:match("Hand") or part.Name:match("Foot") then
-                part.Color = skinData.LimbColor
-            end
-        end
-    end
-end
-
--- Создание кнопок скинов
-local skinYPosition = 10
-for skinName, _ in pairs(SkinPresets) do
-    local skinButton = Instance.new("TextButton")
-    skinButton.Text = skinName
-    skinButton.Size = UDim2.new(0.9, 0, 0, 40)
-    skinButton.Position = UDim2.new(0.05, 0, 0, skinYPosition)
-    skinButton.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
-    skinButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    skinButton.Parent = VisualSkinsFrame
-    
-    skinButton.MouseButton1Click:Connect(function()
-        ApplySkin(skinName)
-        for _, btn in ipairs(VisualSkinsFrame:GetChildren()) do
-            if btn:IsA("TextButton") then
-                btn.BackgroundColor3 = (btn.Text == skinName) and Color3.fromRGB(0, 80, 0) or Color3.fromRGB(50, 0, 0)
-            end
-        end
-    end)
-    
-    skinYPosition = skinYPosition + 45
-end
-
--- ========== РЕЖИМЫ ХОДЬБЫ (20 вариантов) ==========
-local WalkModesFrame = TabFrames["Misc"]
-local WalkModes = {
-    "Normal", "Robot", "Cartoony", "Elder", "Zombie",
-    "Ninja", "Soldier", "Sneaky", "Bouncy", "Confident",
-    "Scared", "Tired", "Angry", "Happy", "Sad",
-    "Drunk", "Injured", "Alien", "Spider", "Mecha"
-}
-
-local currentWalkMode = "Normal"
-
-local function SetWalkMode(mode)
-    currentWalkMode = mode
-    local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-    if not humanoid then return end
-    
-    -- Имитация разных стилей ходьбы через изменение параметров
-    if mode == "Robot" then
-        humanoid.WalkSpeed = 12
-        humanoid.JumpPower = 25
-    elseif mode == "Zombie" then
-        humanoid.WalkSpeed = 8
-        humanoid.JumpPower = 15
-    elseif mode == "Ninja" then
-        humanoid.WalkSpeed = 20
-        humanoid.JumpPower = 50
-    -- ... другие режимы
-    else -- Normal
-        humanoid.WalkSpeed = 16
-        humanoid.JumpPower = 50
-    end
-end
-
--- Создание кнопок режимов ходьбы
-local walkYPosition = 10
-for _, mode in ipairs(WalkModes) do
-    local walkButton = Instance.new("TextButton")
-    walkButton.Text = mode
-    walkButton.Size = UDim2.new(0.9, 0, 0, 30)
-    walkButton.Position = UDim2.new(0.05, 0, 0, walkYPosition)
-    walkButton.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
-    walkButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    walkButton.Parent = WalkModesFrame
-    
-    walkButton.MouseButton1Click:Connect(function()
-        SetWalkMode(mode)
-        for _, btn in ipairs(WalkModesFrame:GetChildren()) do
-            if btn:IsA("TextButton") then
-                btn.BackgroundColor3 = (btn.Text == mode) and Color3.fromRGB(0, 70, 0) or Color3.fromRGB(40, 0, 0)
-            end
-        end
-    end)
-    
-    walkYPosition = walkYPosition + 35
-end
-
--- ========== ОСНОВНЫЕ ФУНКЦИИ ==========
 -- Fly система
 local flying = false
 local flySpeed = 50
@@ -249,7 +81,7 @@ FlyToggle.Size = UDim2.new(0.9, 0, 0, 35)
 FlyToggle.Position = UDim2.new(0.05, 0, 0.05, 0)
 FlyToggle.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
 FlyToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-FlyToggle.Parent = TabFrames["Functions"]
+FlyToggle.Parent = FunctionsFrame
 
 local FlySpeedSlider = Instance.new("TextBox")
 FlySpeedSlider.Text = tostring(flySpeed)
@@ -257,7 +89,7 @@ FlySpeedSlider.Size = UDim2.new(0.3, 0, 0, 25)
 FlySpeedSlider.Position = UDim2.new(0.6, 0, 0.05, 5)
 FlySpeedSlider.BackgroundColor3 = Color3.fromRGB(30, 0, 0)
 FlySpeedSlider.TextColor3 = Color3.fromRGB(255, 255, 255)
-FlySpeedSlider.Parent = TabFrames["Functions"]
+FlySpeedSlider.Parent = FunctionsFrame
 
 FlyToggle.MouseButton1Click:Connect(function()
     flying = not flying
@@ -271,7 +103,6 @@ FlyToggle.MouseButton1Click:Connect(function()
         local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
         if not humanoidRootPart then return end
         
-        -- Создаем физические элементы
         local bodyVelocity = Instance.new("BodyVelocity")
         bodyVelocity.Velocity = Vector3.new()
         bodyVelocity.MaxForce = Vector3.new(9e9, 9e9, 9e9)
@@ -284,7 +115,6 @@ FlyToggle.MouseButton1Click:Connect(function()
         bodyGyro.CFrame = humanoidRootPart.CFrame
         bodyGyro.Parent = humanoidRootPart
         
-        -- Обработка управления
         flyConnections.heartbeat = RunService.Heartbeat:Connect(function()
             if not flying or not character or not humanoidRootPart then return end
             
@@ -300,20 +130,6 @@ FlyToggle.MouseButton1Click:Connect(function()
             
             bodyVelocity.Velocity = moveVec * flySpeed
             bodyGyro.CFrame = camCF
-        end)
-        
-        flyConnections.characterAdded = LocalPlayer.CharacterAdded:Connect(function(newChar)
-            task.wait(1) -- Ждем загрузки персонажа
-            if flying then
-                FlyToggle:SetAttribute("LastState", true)
-                FlyToggle.Text = "Fly: OFF"
-                FlyToggle.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
-                flying = false
-                
-                if bodyVelocity then bodyVelocity:Destroy() end
-                if bodyGyro then bodyGyro:Destroy() end
-                if flyConnections.heartbeat then flyConnections.heartbeat:Disconnect() end
-            end
         end)
     else
         for _, conn in pairs(flyConnections) do
@@ -340,7 +156,8 @@ FlySpeedSlider.FocusLost:Connect(function()
     if newSpeed and newSpeed > 0 and newSpeed <= 500 then
         flySpeed = newSpeed
     else
-        FlySpeedSlider.Text = tostring(flySpeed)
+        FlySpeedSlider.Text = "50"
+        flySpeed = 50
     end
 end)
 
@@ -354,7 +171,7 @@ NoclipToggle.Size = UDim2.new(0.9, 0, 0, 35)
 NoclipToggle.Position = UDim2.new(0.05, 0, 0.12, 0)
 NoclipToggle.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
 NoclipToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-NoclipToggle.Parent = TabFrames["Functions"]
+NoclipToggle.Parent = FunctionsFrame
 
 NoclipToggle.MouseButton1Click:Connect(function()
     noclip = not noclip
@@ -373,6 +190,7 @@ NoclipToggle.MouseButton1Click:Connect(function()
         end)
     elseif noclipConnection then
         noclipConnection:Disconnect()
+        noclipConnection = nil
     end
 end)
 
@@ -386,7 +204,7 @@ SpeedToggle.Size = UDim2.new(0.9, 0, 0, 35)
 SpeedToggle.Position = UDim2.new(0.05, 0, 0.19, 0)
 SpeedToggle.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
 SpeedToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedToggle.Parent = TabFrames["Functions"]
+SpeedToggle.Parent = FunctionsFrame
 
 local SpeedSlider = Instance.new("TextBox")
 SpeedSlider.Text = "16"
@@ -394,7 +212,7 @@ SpeedSlider.Size = UDim2.new(0.3, 0, 0, 25)
 SpeedSlider.Position = UDim2.new(0.6, 0, 0.19, 5)
 SpeedSlider.BackgroundColor3 = Color3.fromRGB(30, 0, 0)
 SpeedSlider.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedSlider.Parent = TabFrames["Functions"]
+SpeedSlider.Parent = FunctionsFrame
 
 SpeedToggle.MouseButton1Click:Connect(function()
     speedHackEnabled = not speedHackEnabled
@@ -463,22 +281,18 @@ local function UpdateESP()
 
             if humanoidRootPart and head and humanoid then
                 if not espBoxes[player] then
-                    -- Box ESP
                     local box = Drawing.new("Square")
                     box.Visible = false
                     box.Color = Color3.fromRGB(255, 0, 0)
                     box.Thickness = 2
                     box.Filled = false
-                    box.ZIndex = 10
 
-                    -- Health Text
                     local text = Drawing.new("Text")
                     text.Visible = false
                     text.Color = Color3.fromRGB(255, 255, 255)
                     text.Size = 16
                     text.Center = true
                     text.Outline = true
-                    text.ZIndex = 11
 
                     espBoxes[player] = {box}
                     espTexts[player] = text
@@ -574,6 +388,80 @@ ChamsToggle.MouseButton1Click:Connect(function()
     UpdateChams()
 end)
 
+-- ========== ВИЗУАЛЬНЫЕ СКИНЫ ==========
+local SkinsFrame = TabFrames["Skins"]
+local SkinPresets = {
+    ["Corblox"] = {
+        HeadColor = Color3.fromRGB(255, 0, 0),
+        TorsoColor = Color3.fromRGB(0, 0, 255),
+        LimbColor = Color3.fromRGB(0, 255, 0)
+    },
+    ["Ghost"] = {
+        HeadColor = Color3.fromRGB(200, 200, 200),
+        TorsoColor = Color3.fromRGB(150, 150, 150),
+        LimbColor = Color3.fromRGB(100, 100, 100)
+    },
+    ["Gold"] = {
+        HeadColor = Color3.fromRGB(212, 175, 55),
+        TorsoColor = Color3.fromRGB(214, 201, 30),
+        LimbColor = Color3.fromRGB(255, 216, 0)
+    },
+    ["Neon"] = {
+        HeadColor = Color3.fromRGB(255, 0, 255),
+        TorsoColor = Color3.fromRGB(0, 255, 255),
+        LimbColor = Color3.fromRGB(255, 255, 0)
+    },
+    ["Dark Knight"] = {
+        HeadColor = Color3.fromRGB(20, 20, 20),
+        TorsoColor = Color3.fromRGB(40, 40, 40),
+        LimbColor = Color3.fromRGB(25, 25, 25)
+    }
+}
+
+local currentSkin = nil
+
+local function ApplySkin(skinName)
+    if not LocalPlayer.Character then return end
+    
+    currentSkin = skinName
+    local skinData = SkinPresets[skinName]
+    
+    for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            if part.Name == "Head" then
+                part.Color = skinData.HeadColor
+            elseif part.Name == "Torso" or part.Name == "UpperTorso" then
+                part.Color = skinData.TorsoColor
+            elseif part.Name:match("Arm") or part.Name:match("Leg") then
+                part.Color = skinData.LimbColor
+            end
+        end
+    end
+end
+
+-- Создание кнопок скинов
+local skinYPosition = 10
+for skinName, _ in pairs(SkinPresets) do
+    local skinButton = Instance.new("TextButton")
+    skinButton.Text = skinName
+    skinButton.Size = UDim2.new(0.9, 0, 0, 40)
+    skinButton.Position = UDim2.new(0.05, 0, 0, skinYPosition)
+    skinButton.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+    skinButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    skinButton.Parent = SkinsFrame
+    
+    skinButton.MouseButton1Click:Connect(function()
+        ApplySkin(skinName)
+        for _, btn in ipairs(SkinsFrame:GetChildren()) do
+            if btn:IsA("TextButton") then
+                btn.BackgroundColor3 = (btn.Text == skinName) and Color3.fromRGB(0, 80, 0) or Color3.fromRGB(50, 0, 0)
+            end
+        end
+    end)
+    
+    skinYPosition = skinYPosition + 45
+end
+
 -- ========== НАСТРОЙКИ ==========
 local SettingsFrame = TabFrames["Settings"]
 
@@ -607,16 +495,11 @@ end)
 -- ========== СИСТЕМНЫЕ ФУНКЦИИ ==========
 -- Автоматическое применение при респавне
 LocalPlayer.CharacterAdded:Connect(function(character)
-    task.wait(1) -- Ждем полной загрузки персонажа
+    task.wait(1) -- Ждем полной загрузки
     
     -- Применяем скин
     if currentSkin then
         ApplySkin(currentSkin)
-    end
-    
-    -- Восстанавливаем режим ходьбы
-    if currentWalkMode then
-        SetWalkMode(currentWalkMode)
     end
     
     -- Восстанавливаем скорость
@@ -626,13 +509,6 @@ LocalPlayer.CharacterAdded:Connect(function(character)
             humanoid.WalkSpeed = tonumber(SpeedSlider.Text) or 16
         end
     end
-end)
-
--- Обработка новых игроков
-Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function()
-        if chamsEnabled then UpdateChams() end
-    end)
 end)
 
 -- Основной цикл обновления
@@ -677,13 +553,6 @@ UserInputService.InputBegan:Connect(function(input)
         GUI.Enabled = not GUI.Enabled
     end
 end)
-
--- Инициализация для текущих игроков
-for _, player in ipairs(Players:GetPlayers()) do
-    player.CharacterAdded:Connect(function()
-        if chamsEnabled then UpdateChams() end
-    end)
-end
 
 -- Первоначальное обновление
 if chamsEnabled then UpdateChams() end
