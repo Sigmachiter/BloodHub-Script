@@ -14,18 +14,18 @@ local function LoadBloodHub()
     local noclipActive = false
     local speedActive = false
     local spinActive = false
-    local flySpeed = 50  -- Начальная скорость (макс 100)
-    local spinSpeed = 1  -- Скорость вращения
+    local flySpeed = 50
+    local spinSpeed = 1
 
     -- Создание интерфейса
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "BloodHub"
     ScreenGui.Parent = game:GetService("CoreGui")
-    ScreenGui.Enabled = false -- Начинаем с закрытого меню
+    ScreenGui.Enabled = false
 
     -- Главный контейнер
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0.18, 0, 0.3, 0)
+    MainFrame.Size = UDim2.new(0.18, 0, 0.35, 0)  -- Увеличили высоту для новой вкладки
     MainFrame.Position = UDim2.new(0.82, 0, 0.35, 0)
     MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
     MainFrame.BorderSizePixel = 0
@@ -37,7 +37,7 @@ local function LoadBloodHub()
 
     -- Заголовок
     local TitleFrame = Instance.new("Frame")
-    TitleFrame.Size = UDim2.new(1, 0, 0.12, 0)
+    TitleFrame.Size = UDim2.new(1, 0, 0.1, 0)  -- Уменьшили высоту заголовка
     TitleFrame.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
     
     local TitleCorner = Instance.new("UICorner")
@@ -65,23 +65,23 @@ local function LoadBloodHub()
     Version.TextSize = 10
     Version.Parent = TitleFrame
 
-    -- Вкладки
+    -- Вкладки (добавили DUPE)
     local TabsFrame = Instance.new("Frame")
     TabsFrame.Size = UDim2.new(1, 0, 0.1, 0)
-    TabsFrame.Position = UDim2.new(0, 0, 0.12, 0)
+    TabsFrame.Position = UDim2.new(0, 0, 0.1, 0)
     TabsFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     TabsFrame.BorderSizePixel = 0
     TabsFrame.Parent = MainFrame
 
-    local function CreateTab(text, pos)
+    local function CreateTab(text, pos, width)
         local tab = Instance.new("TextButton")
         tab.Text = text
-        tab.Size = UDim2.new(0.5, 0, 1, 0)
+        tab.Size = UDim2.new(width, 0, 1, 0)
         tab.Position = pos
         tab.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         tab.TextColor3 = Color3.new(1, 1, 1)
         tab.Font = Enum.Font.GothamBold
-        tab.TextSize = 12
+        tab.TextSize = 10  -- Уменьшили размер текста
         tab.AutoButtonColor = false
         
         local corner = Instance.new("UICorner")
@@ -92,25 +92,35 @@ local function LoadBloodHub()
         return tab
     end
 
-    local UpdatesTab = CreateTab("UPDATES", UDim2.new(0, 0, 0, 0))
-    local MiscTab = CreateTab("MISC", UDim2.new(0.5, 0, 0, 0))
+    -- Три вкладки с новыми пропорциями
+    local UpdatesTab = CreateTab("UPDATES", UDim2.new(0, 0, 0, 0), 0.33)
+    local MiscTab = CreateTab("MISC", UDim2.new(0.33, 0, 0, 0), 0.33)
+    local DupeTab = CreateTab("DUPE", UDim2.new(0.66, 0, 0, 0), 0.34)
 
     -- Контейнеры
     local UpdatesContainer = Instance.new("ScrollingFrame")
-    UpdatesContainer.Size = UDim2.new(0.95, 0, 0.75, 0)
-    UpdatesContainer.Position = UDim2.new(0.025, 0, 0.23, 0)
+    UpdatesContainer.Size = UDim2.new(0.95, 0, 0.8, 0)  -- Увеличили высоту
+    UpdatesContainer.Position = UDim2.new(0.025, 0, 0.2, 0)
     UpdatesContainer.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
     UpdatesContainer.ScrollBarThickness = 5
     UpdatesContainer.Visible = true
     UpdatesContainer.Parent = MainFrame
 
     local MiscContainer = Instance.new("ScrollingFrame")
-    MiscContainer.Size = UDim2.new(0.95, 0, 0.75, 0)
-    MiscContainer.Position = UDim2.new(0.025, 0, 0.23, 0)
+    MiscContainer.Size = UDim2.new(0.95, 0, 0.8, 0)
+    MiscContainer.Position = UDim2.new(0.025, 0, 0.2, 0)
     MiscContainer.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
     MiscContainer.ScrollBarThickness = 5
     MiscContainer.Visible = false
     MiscContainer.Parent = MainFrame
+
+    local DupeContainer = Instance.new("ScrollingFrame")
+    DupeContainer.Size = UDim2.new(0.95, 0, 0.8, 0)
+    DupeContainer.Position = UDim2.new(0.025, 0, 0.2, 0)
+    DupeContainer.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    DupeContainer.ScrollBarThickness = 5
+    DupeContainer.Visible = false
+    DupeContainer.Parent = MainFrame
 
     -- Раздел UPDATES
     local PatchNotes = {
@@ -118,17 +128,18 @@ local function LoadBloodHub()
         "Noclip physics fixed",
         "Speed control slider",
         "Spin rotation control",
-        "Anti-cheat test module"
+        "Dupe items function",
+        "New compact UI design"
     }
 
     local Layout = Instance.new("UIListLayout")
-    Layout.Padding = UDim.new(0, 8)
+    Layout.Padding = UDim.new(0, 5)  -- Уменьшили расстояние
     Layout.Parent = UpdatesContainer
 
     for i, note in ipairs(PatchNotes) do
         local noteFrame = Instance.new("Frame")
-        noteFrame.Size = UDim2.new(0.9, 0, 0, 22)
-        noteFrame.Position = UDim2.new(0.05, 0, 0, (i-1)*30)
+        noteFrame.Size = UDim2.new(0.9, 0, 0, 18)  -- Уменьшили высоту
+        noteFrame.Position = UDim2.new(0.05, 0, 0, (i-1)*20)  -- Сблизили элементы
         noteFrame.BackgroundTransparency = 1
         noteFrame.Parent = UpdatesContainer
         
@@ -138,7 +149,7 @@ local function LoadBloodHub()
         bullet.BackgroundTransparency = 1
         bullet.TextColor3 = Color3.fromRGB(200, 40, 40)
         bullet.Font = Enum.Font.GothamBold
-        bullet.TextSize = 14
+        bullet.TextSize = 12  -- Уменьшили размер
         bullet.Parent = noteFrame
         
         local text = Instance.new("TextLabel")
@@ -148,21 +159,21 @@ local function LoadBloodHub()
         text.BackgroundTransparency = 1
         text.TextColor3 = Color3.new(0.9, 0.9, 0.9)
         text.Font = Enum.Font.Gotham
-        text.TextSize = 12
+        text.TextSize = 10  -- Уменьшили размер
         text.TextXAlignment = Enum.TextXAlignment.Left
         text.Parent = noteFrame
     end
 
-    -- Раздел MISC
+    -- Раздел MISC (компактный)
     local function CreateButton(parent, text, yPos)
         local button = Instance.new("TextButton")
         button.Text = text
-        button.Size = UDim2.new(0.9, 0, 0, 30)
+        button.Size = UDim2.new(0.9, 0, 0, 25)  -- Уменьшили высоту кнопок
         button.Position = UDim2.new(0.05, 0, yPos, 0)
         button.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
         button.TextColor3 = Color3.new(1, 1, 1)
         button.Font = Enum.Font.Gotham
-        button.TextSize = 12
+        button.TextSize = 11  -- Уменьшили размер текста
         button.AutoButtonColor = false
         
         local corner = Instance.new("UICorner")
@@ -181,16 +192,16 @@ local function LoadBloodHub()
         return button
     end
 
-    -- Кнопки функций
-    local FlyBtn = CreateButton(MiscContainer, "Fly [ ]", 0.05)
-    local NoclipBtn = CreateButton(MiscContainer, "Noclip [ ]", 0.15)
-    local SpeedBtn = CreateButton(MiscContainer, "Speed Control [ ]", 0.25)
-    local SpinBtn = CreateButton(MiscContainer, "Spin Control [ ]", 0.35)
+    -- Кнопки функций (расположены ближе)
+    local FlyBtn = CreateButton(MiscContainer, "Fly [ ]", 0.03)
+    local NoclipBtn = CreateButton(MiscContainer, "Noclip [ ]", 0.10)  -- Ближе друг к другу
+    local SpeedBtn = CreateButton(MiscContainer, "Speed Control [ ]", 0.17)
+    local SpinBtn = CreateButton(MiscContainer, "Spin Control [ ]", 0.24)
 
-    -- Фрейм настроек скорости
+    -- Фрейм настроек скорости (компактный)
     local SpeedFrame = Instance.new("Frame")
-    SpeedFrame.Size = UDim2.new(0.9, 0, 0, 100)
-    SpeedFrame.Position = UDim2.new(0.05, 0, 0.45, 0)
+    SpeedFrame.Size = UDim2.new(0.9, 0, 0, 70)  -- Уменьшили высоту
+    SpeedFrame.Position = UDim2.new(0.05, 0, 0.31, 0)
     SpeedFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     SpeedFrame.Visible = false
     SpeedFrame.Parent = MiscContainer
@@ -201,16 +212,19 @@ local function LoadBloodHub()
     SpeedLabel.BackgroundTransparency = 1
     SpeedLabel.TextColor3 = Color3.new(1, 1, 1)
     SpeedLabel.Font = Enum.Font.GothamBold
-    SpeedLabel.TextSize = 12
+    SpeedLabel.TextSize = 11  -- Уменьшили размер
     SpeedLabel.Parent = SpeedFrame
 
     local SpeedUp = CreateButton(SpeedFrame, "▲ Increase", 0.3)
+    SpeedUp.Size = UDim2.new(0.45, 0, 0, 20)  -- Уменьшили размер
     local SpeedDown = CreateButton(SpeedFrame, "▼ Decrease", 0.6)
+    SpeedDown.Size = UDim2.new(0.45, 0, 0, 20)
+    SpeedDown.Position = UDim2.new(0.5, 0, 0.6, 0)
 
-    -- Фрейм настроек вращения
+    -- Фрейм настроек вращения (компактный)
     local SpinFrame = Instance.new("Frame")
-    SpinFrame.Size = UDim2.new(0.9, 0, 0, 100)
-    SpinFrame.Position = UDim2.new(0.05, 0, 0.6, 0)
+    SpinFrame.Size = UDim2.new(0.9, 0, 0, 70)
+    SpinFrame.Position = UDim2.new(0.05, 0, 0.46, 0)
     SpinFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     SpinFrame.Visible = false
     SpinFrame.Parent = MiscContainer
@@ -221,11 +235,60 @@ local function LoadBloodHub()
     SpinLabel.BackgroundTransparency = 1
     SpinLabel.TextColor3 = Color3.new(1, 1, 1)
     SpinLabel.Font = Enum.Font.GothamBold
-    SpinLabel.TextSize = 12
+    SpinLabel.TextSize = 11
     SpinLabel.Parent = SpinFrame
 
     local SpinUp = CreateButton(SpinFrame, "▲ Faster", 0.3)
+    SpinUp.Size = UDim2.new(0.45, 0, 0, 20)
     local SpinDown = CreateButton(SpinFrame, "▼ Slower", 0.6)
+    SpinDown.Size = UDim2.new(0.45, 0, 0, 20)
+    SpinDown.Position = UDim2.new(0.5, 0, 0.6, 0)
+
+    -- Раздел DUPE
+    local DupeBtn = Instance.new("TextButton")
+    DupeBtn.Text = "DUP ITEMS"
+    DupeBtn.Size = UDim2.new(0.9, 0, 0, 40)  -- Большая кнопка
+    DupeBtn.Position = UDim2.new(0.05, 0, 0.1, 0)
+    DupeBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    DupeBtn.TextColor3 = Color3.new(1, 1, 1)
+    DupeBtn.Font = Enum.Font.GothamBold
+    DupeBtn.TextSize = 14
+    DupeBtn.Parent = DupeContainer
+    
+    local DupeCorner = Instance.new("UICorner")
+    DupeCorner.CornerRadius = UDim.new(0, 8)
+    DupeCorner.Parent = DupeBtn
+
+    -- Функция дублирования предметов
+    local function DupeItems()
+        if not Player.Character then return end
+        
+        -- Находим текущий инструмент в руке
+        local currentTool = Player.Character:FindFirstChildWhichIsA("Tool")
+        if not currentTool then
+            warn("No item equipped!")
+            return
+        end
+        
+        -- Создаем визуальную копию
+        local clone = currentTool:Clone()
+        clone.Parent = Player.Backpack
+        
+        -- Эффект для визуального подтверждения
+        local effect = Instance.new("Part")
+        effect.Size = Vector3.new(1, 1, 1)
+        effect.Position = Player.Character.HumanoidRootPart.Position
+        effect.Anchored = true
+        effect.CanCollide = false
+        effect.Transparency = 0.5
+        effect.Color = Color3.fromRGB(0, 255, 0)
+        effect.Parent = workspace
+        
+        local mesh = Instance.new("SpecialMesh", effect)
+        mesh.MeshType = Enum.MeshType.Sphere
+        
+        game:GetService("Debris"):AddItem(effect, 1)
+    end
 
     -- Функция Fly
     local function Fly()
@@ -253,9 +316,9 @@ local function LoadBloodHub()
             moveDir += Vector3.new(0, -1, 0)
         end
         
-        -- Применение скорости (макс 100)
+        -- Применение скорости
         if moveDir.Magnitude > 0 then
-            moveDir = moveDir.Unit * math.min(flySpeed, 100)
+            moveDir = moveDir.Unit * flySpeed
         end
         RootPart.Velocity = moveDir
     end
@@ -303,6 +366,8 @@ local function LoadBloodHub()
         SpinFrame.Visible = spinActive
     end)
 
+    DupeBtn.MouseButton1Click:Connect(DupeItems)
+
     -- Управление скоростью
     SpeedUp.MouseButton1Click:Connect(function()
         flySpeed = math.min(flySpeed + 5, 100)
@@ -336,15 +401,28 @@ local function LoadBloodHub()
     UpdatesTab.MouseButton1Click:Connect(function()
         UpdatesContainer.Visible = true
         MiscContainer.Visible = false
+        DupeContainer.Visible = false
         UpdatesTab.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
         MiscTab.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        DupeTab.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     end)
 
     MiscTab.MouseButton1Click:Connect(function()
         UpdatesContainer.Visible = false
         MiscContainer.Visible = true
+        DupeContainer.Visible = false
         MiscTab.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
         UpdatesTab.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        DupeTab.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    end)
+
+    DupeTab.MouseButton1Click:Connect(function()
+        UpdatesContainer.Visible = false
+        MiscContainer.Visible = false
+        DupeContainer.Visible = true
+        DupeTab.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+        UpdatesTab.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        MiscTab.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     end)
 
     -- Управление меню (правый Ctrl)
