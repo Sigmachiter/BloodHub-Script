@@ -1,188 +1,142 @@
---[[
-  BloodHub Cheat | Roblox
-  Автор: @ws3eqr
-  Версия: 1.0 (Официальная)
---]]
-
--- Сервисы (корректные имена)
+local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
-local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local localPlayer = Players.LocalPlayer
 
--- Основной GUI
-local BloodHub = Instance.new("ScreenGui")
-BloodHub.Name = "BloodHub"
-BloodHub.Parent = localPlayer:WaitForChild("PlayerGui")
+local LocalPlayer = Players.LocalPlayer
+local GUI = Instance.new("ScreenGui")
+GUI.Name = "BloodHub_Main"
+GUI.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
+-- Основной контейнер
 local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 400, 0, 450)
-MainFrame.Position = UDim2.new(0.5, -200, 0.5, -225)
-MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-MainFrame.BackgroundColor3 = Color3.new(0, 0, 0)
-MainFrame.BackgroundTransparency = 0.3  -- Исправлено: 30% прозрачности
+MainFrame.Size = UDim2.new(0, 400, 0, 500)
+MainFrame.Position = UDim2.new(0.5, -200, 0.5, -250)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 0, 0)
+MainFrame.BackgroundTransparency = 0.3
 MainFrame.BorderSizePixel = 0
-MainFrame.ClipsDescendants = true
+MainFrame.Parent = GUI
 
--- Градиент (Черно-красный) - исправлено создание
-local Gradient = Instance.new("UIGradient")
-Gradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.new(0, 0, 0)),
-    ColorSequenceKeypoint.new(1, Color3.new(0.8, 0, 0))
-}
-Gradient.Rotation = 90
-Gradient.Parent = MainFrame
-
--- Заголовок (исправлено позиционирование)
+-- Заголовок
 local Title = Instance.new("TextLabel")
-Title.Name = "Title"
-Title.Text = "BloodHub v1.0 | @ws3eqr"
-Title.Size = UDim2.new(1, -20, 0, 40)  -- Исправлены отступы
-Title.Position = UDim2.new(0, 10, 0, 5)
-Title.BackgroundTransparency = 1
-Title.TextColor3 = Color3.new(1, 1, 1)
+Title.Text = "BLOODHUB v1.0"
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.TextColor3 = Color3.fromRGB(255, 50, 50)
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 18
+Title.BackgroundTransparency = 1
 Title.Parent = MainFrame
 
--- Вкладки (исправлен цикл создания)
-local Tabs = {"Misc", "Update", "Visual", "ESP", "Functions"}
+-- Список вкладок
+local Tabs = {
+    "Functions",
+    "Visuals",
+    "Misc",
+    "Settings"
+}
+
+-- Контейнеры для содержимого вкладок
+local TabFrames = {}
 local TabButtons = {}
 
+-- Создаем вкладки
 for i, tabName in ipairs(Tabs) do
-    local TabButton = Instance.new("TextButton")
-    TabButton.Name = tabName
-    TabButton.Text = tabName
-    TabButton.Size = UDim2.new(0.18, 0, 0, 30)  -- Корректный размер
-    TabButton.Position = UDim2.new(0.18 * (i-1), 5, 0, 45)
-    TabButton.BackgroundTransparency = 0.5
-    TabButton.BackgroundColor3 = Color3.new(0.3, 0, 0)
-    TabButton.TextColor3 = Color3.new(1, 1, 1)
-    TabButton.Font = Enum.Font.Gotham
-    TabButton.TextSize = 14
-    TabButton.Parent = MainFrame
+    -- Кнопка вкладки
+    local tabButton = Instance.new("TextButton")
+    tabButton.Name = tabName
+    tabButton.Text = tabName
+    tabButton.Size = UDim2.new(0.24, 0, 0, 30)
+    tabButton.Position = UDim2.new(0.25 * (i-1), 0, 0, 45)
+    tabButton.BackgroundColor3 = i == 1 and Color3.fromRGB(80, 0, 0) or Color3.fromRGB(30, 0, 0)
+    tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    tabButton.Font = Enum.Font.Gotham
+    tabButton.Parent = MainFrame
     
-    TabButtons[tabName] = TabButton  -- Правильное добавление в таблицу
-end
-
--- Функция полета (исправленная и оптимизированная)
-local flying = false
-local flySpeed = 50
-
-local function ToggleFly()
-    if not localPlayer.Character then return end
+    -- Контейнер содержимого вкладки
+    local tabFrame = Instance.new("Frame")
+    tabFrame.Name = tabName.."_Content"
+    tabFrame.Size = UDim2.new(1, 0, 1, -80)
+    tabFrame.Position = UDim2.new(0, 0, 0, 80)
+    tabFrame.BackgroundTransparency = 1
+    tabFrame.Visible = i == 1
+    tabFrame.Parent = MainFrame
     
-    local humanoidRootPart = localPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if not humanoidRootPart then return end
+    TabFrames[tabName] = tabFrame
+    TabButtons[tabName] = tabButton
     
-    flying = not flying
-    
-    if flying then
-        local bodyVelocity = Instance.new("BodyVelocity")
-        bodyVelocity.Velocity = Vector3.new(0, 0, 0)
-        bodyVelocity.MaxForce = Vector3.new(0, 0, 0)
-        bodyVelocity.P = 1000
-        bodyVelocity.Parent = humanoidRootPart
-        
-        local bodyGyro = Instance.new("BodyGyro")
-        bodyGyro.MaxTorque = Vector3.new(0, 0, 0)
-        bodyGyro.P = 1000
-        bodyGyro.Parent = humanoidRootPart
-        
-        RunService.Heartbeat:Connect(function()
-            if not flying or not humanoidRootPart then 
-                bodyVelocity:Destroy()
-                bodyGyro:Destroy()
-                return 
-            end
-            
-            local camera = workspace.CurrentCamera
-            bodyGyro.CFrame = camera.CFrame
-            
-            local moveVector = Vector3.new()
-            if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveVector += camera.CFrame.LookVector end
-            if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveVector -= camera.CFrame.LookVector end
-            if UserInputService:IsKeyDown(Enum.KeyCode.D) then moveVector += camera.CFrame.RightVector end
-            if UserInputService:IsKeyDown(Enum.KeyCode.A) then moveVector -= camera.CFrame.RightVector end
-            if UserInputService:IsKeyDown(Enum.KeyCode.Space) then moveVector += Vector3.new(0, 1, 0) end
-            if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then moveVector -= Vector3.new(0, 1, 0) end
-            
-            bodyVelocity.Velocity = moveVector * flySpeed
-        end)
-    end
-end
-
--- Кнопка активации полета
-local FlyButton = Instance.new("TextButton")
-FlyButton.Text = "Включить полет"
-FlyButton.Size = UDim2.new(0.8, 0, 0, 40)
-FlyButton.Position = UDim2.new(0.1, 0, 0.2, 0)
-FlyButton.Parent = TabButtons["Functions"]
-
-FlyButton.MouseButton1Click:Connect(ToggleFly)
-
--- Регулятор скорости полета (исправленный)
-local SpeedSlider = Instance.new("TextBox")
-SpeedSlider.Text = tostring(flySpeed)
-SpeedSlider.Size = UDim2.new(0.6, 0, 0, 25)
-SpeedSlider.Position = UDim2.new(0.2, 0, 0.3, 0)
-SpeedSlider.Parent = TabButtons["Functions"]
-
-SpeedSlider.FocusLost:Connect(function()
-    local newSpeed = tonumber(SpeedSlider.Text)
-    if newSpeed and newSpeed > 0 and newSpeed <= 500 then
-        flySpeed = newSpeed
-    else
-        SpeedSlider.Text = tostring(flySpeed)
-    end
-end)
-
--- Ноуклип (исправленная реализация)
-local noclip = false
-local noclipConnection
-
-local function ToggleNoclip()
-    noclip = not noclip
-    
-    if noclip then
-        noclipConnection = RunService.Stepped:Connect(function()
-            if localPlayer.Character then
-                for _, child in ipairs(localPlayer.Character:GetDescendants()) do
-                    if child:IsA("BasePart") then
-                        child.CanCollide = false
-                    end
-                end
-            end
-        end)
-    elseif noclipConnection then
-        noclipConnection:Disconnect()
-        noclipConnection = nil
-    end
-end
-
--- Кнопка ноуклипа
-local NoclipButton = Instance.new("TextButton")
-NoclipButton.Text = "Включить NoClip"
-NoclipButton.Size = UDim2.new(0.8, 0, 0, 40)
-NoclipButton.Position = UDim2.new(0.1, 0, 0.4, 0)
-NoclipButton.Parent = TabButtons["Functions"]
-
-NoclipButton.MouseButton1Click:Connect(ToggleNoclip)
-
--- Переключение вкладок (исправленная логика)
-for name, button in pairs(TabButtons) do
-    button.MouseButton1Click:Connect(function()
-        for tabName, tabButton in pairs(TabButtons) do
-            tabButton.BackgroundColor3 = (tabName == name) 
-                and Color3.new(0, 0.5, 0) 
-                or Color3.new(0.3, 0, 0)
+    -- Обработчик клика
+    tabButton.MouseButton1Click:Connect(function()
+        for name, frame in pairs(TabFrames) do
+            frame.Visible = (name == tabName)
+        end
+        for name, button in pairs(TabButtons) do
+            button.BackgroundColor3 = (name == tabName) and Color3.fromRGB(80, 0, 0) or Color3.fromRGB(30, 0, 0)
         end
     end)
 end
 
--- Движение GUI (исправленная реализация)
+-- Добавляем элементы на вкладку Functions
+do
+    local functionsFrame = TabFrames["Functions"]
+    
+    -- Fly
+    local flyButton = Instance.new("TextButton")
+    flyButton.Text = "Включить Fly"
+    flyButton.Size = UDim2.new(0.9, 0, 0, 40)
+    flyButton.Position = UDim2.new(0.05, 0, 0.05, 0)
+    flyButton.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+    flyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    flyButton.Parent = functionsFrame
+    
+    -- Noclip
+    local noclipButton = Instance.new("TextButton")
+    noclipButton.Text = "Включить Noclip"
+    noclipButton.Size = UDim2.new(0.9, 0, 0, 40)
+    noclipButton.Position = UDim2.new(0.05, 0, 0.15, 0)
+    noclipButton.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+    noclipButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    noclipButton.Parent = functionsFrame
+    
+    -- Speed
+    local speedLabel = Instance.new("TextLabel")
+    speedLabel.Text = "Скорость: 16"
+    speedLabel.Size = UDim2.new(0.6, 0, 0, 30)
+    speedLabel.Position = UDim2.new(0.05, 0, 0.25, 0)
+    speedLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    speedLabel.BackgroundTransparency = 1
+    speedLabel.TextXAlignment = Enum.TextXAlignment.Left
+    speedLabel.Parent = functionsFrame
+    
+    local speedBox = Instance.new("TextBox")
+    speedBox.Text = "16"
+    speedBox.Size = UDim2.new(0.25, 0, 0, 30)
+    speedBox.Position = UDim2.new(0.7, 0, 0.25, 0)
+    speedBox.BackgroundColor3 = Color3.fromRGB(30, 0, 0)
+    speedBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    speedBox.Parent = functionsFrame
+end
+
+-- Добавляем элементы на вкладку Visuals
+do
+    local visualsFrame = TabFrames["Visuals"]
+    
+    local espButton = Instance.new("TextButton")
+    espButton.Text = "Включить ESP"
+    espButton.Size = UDim2.new(0.9, 0, 0, 40)
+    espButton.Position = UDim2.new(0.05, 0, 0.05, 0)
+    espButton.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+    espButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    espButton.Parent = visualsFrame
+    
+    local chamsButton = Instance.new("TextButton")
+    chamsButton.Text = "Включить Chams"
+    chamsButton.Size = UDim2.new(0.9, 0, 0, 40)
+    chamsButton.Position = UDim2.new(0.05, 0, 0.15, 0)
+    chamsButton.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+    chamsButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    chamsButton.Parent = visualsFrame
+end
+
+-- Система перетаскивания
 local dragging = false
 local dragStart, frameStart
 
@@ -206,21 +160,15 @@ UserInputService.InputChanged:Connect(function(input)
         MainFrame.Position = UDim2.new(
             frameStart.X.Scale, 
             frameStart.X.Offset + delta.X,
-            frameStart.Y.Scale,
+            frameStart.Y.Scale, 
             frameStart.Y.Offset + delta.Y
         )
     end
 end)
 
--- Бинд на открытие/закрытие
-local isOpen = true
+-- Горячая клавиша для скрытия/показа
 UserInputService.InputBegan:Connect(function(input)
     if input.KeyCode == Enum.KeyCode.RightShift then
-        isOpen = not isOpen
-        BloodHub.Enabled = isOpen
+        GUI.Enabled = not GUI.Enabled
     end
 end)
-
--- Первоначальная настройка
-BloodHub.Enabled = true
-MainFrame.Parent = BloodHub
