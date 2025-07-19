@@ -1,9 +1,9 @@
+-- BloodHub Ultra v2.0 by @ws3eqr
 local function LoadBloodHub()
-    -- Защита от повторного запуска
     if _G.BloodHubLoaded then return end
     _G.BloodHubLoaded = true
 
-    -- Удаление предыдущей версии
+    -- Удаление старой версии
     if game:GetService("CoreGui"):FindFirstChild("BloodHub") then
         game:GetService("CoreGui").BloodHub:Destroy()
     end
@@ -13,70 +13,81 @@ local function LoadBloodHub()
     local UIS = game:GetService("UserInputService")
     local RunService = game:GetService("RunService")
     local TweenService = game:GetService("TweenService")
+    local SoundService = game:GetService("SoundService")
 
     -- Состояния
     local flyActive = false
     local noclipActive = false
     local flySpeed = 50
+    local walkSpeed = 16
     local menuOpen = false
+    local flyVertical = 0
 
     -- Создание интерфейса
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "BloodHub"
     ScreenGui.Parent = game:GetService("CoreGui")
-    ScreenGui.Enabled = false
 
-    -- Главный контейнер (с анимацией)
+    -- Главный фрейм с градиентом
     local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0.2, 0, 0.35, 0)
-    MainFrame.Position = UDim2.new(0.8, 0, 0.3, 0)
-    MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    MainFrame.BorderSizePixel = 0
+    MainFrame.Size = UDim2.new(0.25, 0, 0.4, 0)
+    MainFrame.Position = UDim2.new(0.75, 0, 0.3, 0)
+    MainFrame.BackgroundTransparency = 0.1
     MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-    MainFrame.ClipsDescendants = true
     
+    -- Чёрно-красный градиент
+    local Gradient = Instance.new("UIGradient")
+    Gradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 0, 0)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 0, 0))
+    }
+    Gradient.Rotation = 90
+    Gradient.Parent = MainFrame
+
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 12)
+    UICorner.Parent = MainFrame
+
     -- Тень
     local Shadow = Instance.new("ImageLabel")
-    Shadow.Name = "Shadow"
     Shadow.Image = "rbxassetid://1316045217"
     Shadow.ScaleType = Enum.ScaleType.Slice
     Shadow.SliceCenter = Rect.new(10, 10, 118, 118)
     Shadow.Size = UDim2.new(1, 10, 1, 10)
     Shadow.Position = UDim2.new(0, -5, 0, -5)
     Shadow.BackgroundTransparency = 1
-    Shadow.ImageTransparency = 0.5
+    Shadow.ImageColor3 = Color3.fromRGB(255, 40, 40)
+    Shadow.ImageTransparency = 0.7
     Shadow.Parent = MainFrame
 
-    local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(0, 12)
-    UICorner.Parent = MainFrame
     MainFrame.Parent = ScreenGui
 
-    -- Заголовок (стильный)
+    -- Заголовок
     local Title = Instance.new("TextLabel")
-    Title.Text = "BLOODHUB"
-    Title.Size = UDim2.new(1, 0, 0.1, 0)
-    Title.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
-    Title.TextColor3 = Color3.new(1, 1, 1)
+    Title.Text = "BLOODHUB ULTRA"
     Title.Font = Enum.Font.GothamBlack
-    Title.TextSize = 16
+    Title.TextSize = 18
+    Title.TextColor3 = Color3.new(1, 1, 1)
+    Title.Size = UDim2.new(1, 0, 0.1, 0)
+    Title.BackgroundColor3 = Color3.fromRGB(180, 0, 0)
     Title.Parent = MainFrame
 
     local TitleCorner = Instance.new("UICorner")
-    TitleCorner.CornerRadius = UDim.new(0, 8)
+    TitleCorner.CornerRadius = UDim.new(0, 6)
     TitleCorner.Parent = Title
 
+    -- Версия
     local Version = Instance.new("TextLabel")
-    Version.Text = "v1.1 | @ws3eqr"
+    Version.Text = "v2.0 | @ws3eqr"
+    Version.Font = Enum.Font.Gotham
+    Version.TextSize = 12
+    Version.TextColor3 = Color3.new(0.8, 0.8, 0.8)
     Version.Size = UDim2.new(1, 0, 0.05, 0)
     Version.Position = UDim2.new(0, 0, 0.1, 0)
     Version.BackgroundTransparency = 1
-    Version.TextColor3 = Color3.new(0.9, 0.9, 0.9)
-    Version.Font = Enum.Font.Gotham
-    Version.TextSize = 10
     Version.Parent = MainFrame
 
-    -- Вкладки (с анимацией наведения)
+    -- Вкладки
     local TabsFrame = Instance.new("Frame")
     TabsFrame.Size = UDim2.new(1, 0, 0.08, 0)
     TabsFrame.Position = UDim2.new(0, 0, 0.15, 0)
@@ -88,7 +99,7 @@ local function LoadBloodHub()
         tab.Text = text
         tab.Size = UDim2.new(width, 0, 1, 0)
         tab.Position = pos
-        tab.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        tab.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
         tab.TextColor3 = Color3.new(1, 1, 1)
         tab.Font = Enum.Font.GothamBold
         tab.TextSize = 12
@@ -98,14 +109,13 @@ local function LoadBloodHub()
         corner.CornerRadius = UDim.new(0, 6)
         corner.Parent = tab
         
-        -- Анимация наведения
         tab.MouseEnter:Connect(function()
-            TweenService:Create(tab, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(70, 70, 70)}):Play()
+            TweenService:Create(tab, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 0, 0)}):Play()
         end)
         
         tab.MouseLeave:Connect(function()
-            if tab.Text ~= "UPDATES" then
-                TweenService:Create(tab, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}):Play()
+            if tab.Text ~= "MAIN" then
+                TweenService:Create(tab, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 30, 30)}):Play()
             end
         end)
         
@@ -113,114 +123,69 @@ local function LoadBloodHub()
         return tab
     end
 
-    local UpdatesTab = CreateTab("UPDATES", UDim2.new(0, 0, 0, 0), 0.33)
-    local MiscTab = CreateTab("MISC", UDim2.new(0.33, 0, 0, 0), 0.33)
+    local MainTab = CreateTab("MAIN", UDim2.new(0, 0, 0, 0), 0.33)
+    local PlayerTab = CreateTab("PLAYER", UDim2.new(0.33, 0, 0, 0), 0.33)
     local DupeTab = CreateTab("DUPE", UDim2.new(0.66, 0, 0, 0), 0.34)
 
-    -- Контейнеры (скролл)
+    -- Контейнеры
     local function CreateContainer()
         local container = Instance.new("ScrollingFrame")
         container.Size = UDim2.new(0.95, 0, 0.7, 0)
         container.Position = UDim2.new(0.025, 0, 0.23, 0)
         container.BackgroundTransparency = 1
-        container.ScrollBarThickness = 5
-        container.ScrollBarImageColor3 = Color3.fromRGB(200, 40, 40)
+        container.ScrollBarThickness = 4
+        container.ScrollBarImageColor3 = Color3.fromRGB(180, 0, 0)
         container.Parent = MainFrame
         return container
     end
 
-    local UpdatesContainer = CreateContainer()
-    UpdatesContainer.Visible = true
-
-    local MiscContainer = CreateContainer()
-    MiscContainer.Visible = false
-
+    local MainContainer = CreateContainer()
+    local PlayerContainer = CreateContainer()
     local DupeContainer = CreateContainer()
-    DupeContainer.Visible = false
 
-    -- Раздел UPDATES (список изменений)
-    local PatchNotes = {
-        "Fly system improved",
-        "Noclip now more stealthy",
-        "Speed control (10-100)",
-        "Dupe items (visual effect)",
-        "Anti-cheat bypass tweaks"
-    }
-
-    local Layout = Instance.new("UIListLayout")
-    Layout.Padding = UDim.new(0, 8)
-    Layout.Parent = UpdatesContainer
-
-    for i, note in ipairs(PatchNotes) do
-        local noteFrame = Instance.new("TextLabel")
-        noteFrame.Text = "• " .. note
-        noteFrame.Size = UDim2.new(1, 0, 0, 20)
-        noteFrame.BackgroundTransparency = 1
-        noteFrame.TextColor3 = Color3.new(0.9, 0.9, 0.9)
-        noteFrame.Font = Enum.Font.Gotham
-        noteFrame.TextSize = 12
-        noteFrame.TextXAlignment = Enum.TextXAlignment.Left
-        noteFrame.Parent = UpdatesContainer
-    end
-
-    -- Раздел MISC (Fly, Noclip, Speed)
+    -- Кнопки
     local function CreateButton(parent, text, yPos)
         local button = Instance.new("TextButton")
         button.Text = text
         button.Size = UDim2.new(0.9, 0, 0, 35)
         button.Position = UDim2.new(0.05, 0, yPos, 0)
-        button.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+        button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
         button.TextColor3 = Color3.new(1, 1, 1)
         button.Font = Enum.Font.Gotham
         button.TextSize = 12
         button.AutoButtonColor = false
         
         local corner = Instance.new("UICorner")
-        corner.CornerRadius = UDim.new(0, 8)
+        corner.CornerRadius = UDim.new(0, 6)
         corner.Parent = button
         
-        -- Анимация наведения
         button.MouseEnter:Connect(function()
-            TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 60, 60)}):Play()
+            TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(60, 0, 0)}):Play()
         end)
         
         button.MouseLeave:Connect(function()
-            TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(45, 45, 45)}):Play()
+            TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 30, 30)}):Play()
         end)
         
         button.Parent = parent
         return button
     end
 
-    local FlyBtn = CreateButton(MiscContainer, "Fly [ ]", 0.05)
-    local NoclipBtn = CreateButton(MiscContainer, "Noclip [ ]", 0.15)
-    local SpeedBtn = CreateButton(MiscContainer, "Speed: " .. flySpeed, 0.25)
+    -- MAIN TAB
+    local FlyBtn = CreateButton(MainContainer, "FLY [OFF]", 0.05)
+    local NoclipBtn = CreateButton(MainContainer, "NOCLIP [OFF]", 0.12)
+    local SpeedBtn = CreateButton(MainContainer, "SPEED: "..flySpeed, 0.19)
 
-    -- Раздел DUPE (визуальный эффект)
-    local DupeBtn = Instance.new("TextButton")
-    DupeBtn.Text = "DUP ITEMS"
-    DupeBtn.Size = UDim2.new(0.9, 0, 0, 45)
-    DupeBtn.Position = UDim2.new(0.05, 0, 0.1, 0)
-    DupeBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    DupeBtn.TextColor3 = Color3.new(1, 1, 1)
+    -- PLAYER TAB
+    local WalkSpeedBtn = CreateButton(PlayerContainer, "WALKSPEED: "..walkSpeed, 0.05)
+
+    -- DUPE TAB
+    local DupeBtn = CreateButton(DupeContainer, "DUPE ITEMS", 0.05)
+    DupeBtn.Size = UDim2.new(0.9, 0, 0, 40)
     DupeBtn.Font = Enum.Font.GothamBold
     DupeBtn.TextSize = 14
-    DupeBtn.Parent = DupeContainer
-    
-    local DupeCorner = Instance.new("UICorner")
-    DupeCorner.CornerRadius = UDim.new(0, 10)
-    DupeCorner.Parent = DupeBtn
 
-    -- Анимация нажатия
-    DupeBtn.MouseButton1Down:Connect(function()
-        TweenService:Create(DupeBtn, TweenInfo.new(0.1), {Size = UDim2.new(0.88, 0, 0, 43)}):Play()
-    end)
-    
-    DupeBtn.MouseButton1Up:Connect(function()
-        TweenService:Create(DupeBtn, TweenInfo.new(0.1), {Size = UDim2.new(0.9, 0, 0, 45)}):Play()
-    end)
-
-    -- Fly (оптимизированная версия)
+    -- Fly функция
     local function Fly()
         if not flyActive or not Player.Character then return end
         
@@ -228,67 +193,59 @@ local function LoadBloodHub()
         local RootPart = Player.Character:FindFirstChild("HumanoidRootPart")
         if not Humanoid or not RootPart then return end
         
-        -- Плавное движение (менее заметно для античита)
-        local cam = workspace.CurrentCamera.CFrame.LookVector
-        local moveDir = Vector3.new()
+        local cam = workspace.CurrentCamera.CFrame
+        local moveVec = Vector3.new()
         
-        if UIS:IsKeyDown(Enum.KeyCode.W) then moveDir += cam * 0.7 end
-        if UIS:IsKeyDown(Enum.KeyCode.S) then moveDir -= cam * 0.7 end
-        if UIS:IsKeyDown(Enum.KeyCode.D) then moveDir += Vector3.new(-cam.Z, 0, cam.X) * 0.7 end
-        if UIS:IsKeyDown(Enum.KeyCode.A) then moveDir += Vector3.new(cam.Z, 0, -cam.X) * 0.7 end
+        -- WASD движение
+        if UIS:IsKeyDown(Enum.KeyCode.W) then moveVec += cam.LookVector end
+        if UIS:IsKeyDown(Enum.KeyCode.S) then moveVec -= cam.LookVector end
+        if UIS:IsKeyDown(Enum.KeyCode.D) then moveVec += cam.RightVector end
+        if UIS:IsKeyDown(Enum.KeyCode.A) then moveVec -= cam.RightVector end
         
-        if UIS:IsKeyDown(Enum.KeyCode.Space) then moveDir += Vector3.new(0, 0.7, 0) end
-        if UIS:IsKeyDown(Enum.KeyCode.LeftShift) then moveDir += Vector3.new(0, -0.7, 0) end
+        -- Вертикальное движение
+        if UIS:IsKeyDown(Enum.KeyCode.Space) then
+            flyVertical = math.min(flyVertical + 0.5, flySpeed/2)
+        elseif UIS:IsKeyDown(Enum.KeyCode.LeftShift) then
+            flyVertical = math.max(flyVertical - 0.5, -flySpeed/2)
+        else
+            flyVertical = flyVertical * 0.9
+        end
         
-        if moveDir.Magnitude > 0 then
-            moveDir = moveDir.Unit * (flySpeed / 20) -- Меньше резких изменений
-            RootPart.Velocity = RootPart.Velocity:Lerp(moveDir, 0.3) -- Плавность
+        -- Применение скорости
+        if moveVec.Magnitude > 0 then
+            moveVec = (moveVec.Unit * flySpeed) + Vector3.new(0, flyVertical, 0)
+            RootPart.Velocity = moveVec
+        else
+            RootPart.Velocity = Vector3.new(0, flyVertical, 0)
         end
     end
 
-    -- Noclip (скрытый режим)
-    local lastNoclipCheck = 0
+    -- Noclip функция
     local function Noclip()
-        if not noclipActive or not Player.Character then return end
-        
-        -- Проверка раз в 0.5 сек (меньше нагрузки)
-        if tick() - lastNoclipCheck < 0.5 then return end
-        lastNoclipCheck = tick()
-        
+        if not Player.Character then return end
         for _, part in ipairs(Player.Character:GetDescendants()) do
             if part:IsA("BasePart") then
-                part.CanCollide = false
+                part.CanCollide = not noclipActive
             end
         end
     end
 
-    -- Обработчики кнопок
-    FlyBtn.MouseButton1Click:Connect(function()
-        flyActive = not flyActive
-        FlyBtn.Text = flyActive and "Fly [✓]" or "Fly [ ]"
-    end)
-
-    NoclipBtn.MouseButton1Click:Connect(function()
-        noclipActive = not noclipActive
-        NoclipBtn.Text = noclipActive and "Noclip [✓]" or "Noclip [ ]"
-    end)
-
-    SpeedBtn.MouseButton1Click:Connect(function()
-        flySpeed = flySpeed + 10
-        if flySpeed > 100 then flySpeed = 10 end
-        SpeedBtn.Text = "Speed: " .. flySpeed
-    end)
-
-    -- Dupe эффект (зелёный взрыв)
-    DupeBtn.MouseButton1Click:Connect(function()
+    -- Dupe функция
+    local function DupeItems()
         if not Player.Character then return end
         
-        local root = Player.Character:FindFirstChild("HumanoidRootPart")
-        if not root then return end
+        -- Клонирование инструментов
+        for _, tool in ipairs(Player.Backpack:GetChildren()) do
+            if tool:IsA("Tool") then
+                local clone = tool:Clone()
+                clone.Parent = Player.Character
+            end
+        end
         
+        -- Визуальный эффект
         local effect = Instance.new("Part")
         effect.Size = Vector3.new(1, 1, 1)
-        effect.Position = root.Position
+        effect.Position = Player.Character.HumanoidRootPart.Position
         effect.Anchored = true
         effect.CanCollide = false
         effect.Material = Enum.Material.Neon
@@ -296,44 +253,76 @@ local function LoadBloodHub()
         effect.Transparency = 0.5
         effect.Parent = workspace
         
-        -- Анимация расширения
         TweenService:Create(effect, TweenInfo.new(0.5), {Size = Vector3.new(5, 5, 5), Transparency = 1}):Play()
         game:GetService("Debris"):AddItem(effect, 1)
+        
+        -- Звук
+        local sound = Instance.new("Sound")
+        sound.SoundId = "rbxassetid://142127347"
+        sound.Parent = workspace
+        sound:Play()
+        game:GetService("Debris"):AddItem(sound, 2)
+    end
+
+    -- Обработчики кнопок
+    FlyBtn.MouseButton1Click:Connect(function()
+        flyActive = not flyActive
+        FlyBtn.Text = flyActive and "FLY [ON]" or "FLY [OFF]"
+    end)
+
+    NoclipBtn.MouseButton1Click:Connect(function()
+        noclipActive = not noclipActive
+        NoclipBtn.Text = noclipActive and "NOCLIP [ON]" or "NOCLIP [OFF]"
+    end)
+
+    SpeedBtn.MouseButton1Click:Connect(function()
+        flySpeed = flySpeed + 10
+        if flySpeed > 100 then flySpeed = 10 end
+        SpeedBtn.Text = "SPEED: "..flySpeed
+    end)
+
+    WalkSpeedBtn.MouseButton1Click:Connect(function()
+        walkSpeed = walkSpeed + 5
+        if walkSpeed > 50 then walkSpeed = 16 end
+        WalkSpeedBtn.Text = "WALKSPEED: "..walkSpeed
+        if Player.Character and Player.Character:FindFirstChildOfClass("Humanoid") then
+            Player.Character.Humanoid.WalkSpeed = walkSpeed
+        end
+    end)
+
+    DupeBtn.MouseButton1Click:Connect(function()
+        DupeItems()
     end)
 
     -- Переключение вкладок
-    local function SwitchTab(selectedTab)
-        UpdatesContainer.Visible = (selectedTab == UpdatesTab)
-        MiscContainer.Visible = (selectedTab == MiscTab)
-        DupeContainer.Visible = (selectedTab == DupeTab)
+    local function SwitchTab(tab)
+        MainContainer.Visible = (tab == MainTab)
+        PlayerContainer.Visible = (tab == PlayerTab)
+        DupeContainer.Visible = (tab == DupeTab)
         
-        -- Анимация смены вкладок
-        for _, tab in ipairs({UpdatesTab, MiscTab, DupeTab}) do
-            TweenService:Create(tab, TweenInfo.new(0.2), {
-                BackgroundColor3 = (tab == selectedTab) 
-                    and Color3.fromRGB(200, 40, 40) 
-                    or Color3.fromRGB(50, 50, 50)
+        for _, t in ipairs({MainTab, PlayerTab, DupeTab}) do
+            TweenService:Create(t, TweenInfo.new(0.2), {
+                BackgroundColor3 = (t == tab) and Color3.fromRGB(180, 0, 0) or Color3.fromRGB(30, 30, 30)
             }):Play()
         end
     end
 
-    UpdatesTab.MouseButton1Click:Connect(function() SwitchTab(UpdatesTab) end)
-    MiscTab.MouseButton1Click:Connect(function() SwitchTab(MiscTab) end)
+    MainTab.MouseButton1Click:Connect(function() SwitchTab(MainTab) end)
+    PlayerTab.MouseButton1Click:Connect(function() SwitchTab(PlayerTab) end)
     DupeTab.MouseButton1Click:Connect(function() SwitchTab(DupeTab) end)
 
-    -- Основной цикл (оптимизированный)
+    -- Основной цикл
     RunService.Heartbeat:Connect(function()
         if flyActive then Fly() end
         if noclipActive then Noclip() end
     end)
 
-    -- Открытие/закрытие меню (правый Ctrl + плавная анимация)
+    -- Управление меню
     UIS.InputBegan:Connect(function(input)
         if input.KeyCode == Enum.KeyCode.RightControl then
             menuOpen = not menuOpen
             ScreenGui.Enabled = menuOpen
             
-            -- Анимация появления/исчезновения
             TweenService:Create(MainFrame, TweenInfo.new(0.3), {
                 Position = menuOpen and UDim2.new(0.5, 0, 0.5, 0) or UDim2.new(1.2, 0, 0.5, 0)
             }):Play()
@@ -341,9 +330,9 @@ local function LoadBloodHub()
     end)
 
     -- Инициализация
-    SwitchTab(UpdatesTab)
-    TweenService:Create(MainFrame, TweenInfo.new(0.5), {Position = UDim2.new(0.5, 0, 0.5, 0)}):Play()
+    SwitchTab(MainTab)
+    MainFrame.Position = UDim2.new(1.2, 0, 0.5, 0)
+    ScreenGui.Enabled = false
 end
 
--- Запуск
 LoadBloodHub()
